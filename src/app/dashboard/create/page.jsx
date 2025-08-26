@@ -35,9 +35,9 @@ export default function page() {
             type="text"
             name="title"
             className="shadow border rounded w-full p-3 mb-7 text-gray-700 focus:outline-slate-400 "
-            id="title" // Astuce jsx disponible pour lier le formulaire au HtmlFor... il
+            id="title"                   // Astuce jsx disponible pour lier le formulaire au HtmlFor... il
             placeholder="Title"
-            required // Pour pouvoir submit le formulaire 😋
+            required                     // Pour pouvoir submit le formulaire 😋
             />
             
             {/* Champ pour l'article en markdown */}  

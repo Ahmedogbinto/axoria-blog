@@ -1,3 +1,4 @@
+import { connectToBD } from "@/lib/utils/db/connectToDB";
 import Link from "next/link";
 
 const posts = [
@@ -18,6 +19,7 @@ const posts = [
 ];
 
 export default async function Home() {
+  await connectToBD()
   return (
     <div className="u-main-container u-padding-content-container">
       <h1 className="t-main-title">Stay up to day with AXORIA</h1>
@@ -27,7 +29,7 @@ export default async function Home() {
       <ul className="u-articles-grid ">
         {posts.map((post, id) => (
           <li 
-          key={id}  // l<id serait modifier au fil de la construction du projet 
+          key={id}  // l'id serait modifier au fil de la construction du projet 
           className="rounded-sm shadow-md hover:shadow-xl border hover:border-zinc-300">
 
             <div className="pt-5 px-5 pb-7">
