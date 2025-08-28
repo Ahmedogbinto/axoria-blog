@@ -1,4 +1,7 @@
-import { connectToBD } from "@/lib/utils/db/connectToDB";
+"use server"   // permet de transformer toutes les function utilisees en serveurs actions
+
+import { connectToBD } from "../../utils/db/connectToDB"
+import { Post } from "@/lib/models/post";
 
 export async function addPost(formData){
     const {title, markdownArticle } = Object.fromEntries(formData); // Extration des donn/es du formulaire, Destructuration des données de notre formulaire

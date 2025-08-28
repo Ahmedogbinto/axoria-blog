@@ -1,4 +1,6 @@
 "use client";
+
+import { addPost } from "@/lib/serverActions/blog/postServerActions";
 /**
  * Page de création d'article
  */
@@ -9,7 +11,7 @@ export default function page() {
    * qu'on   pourra directement passé à la methode post.
    
    */
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     const formData = new FormData(e.target) //e.target c'est le formulaire qu'on lui a passé.
@@ -18,6 +20,9 @@ export default function page() {
         console.log(key, valeur)
         console.log(formData)
     }
+
+    const resullt = await addPost(formData)
+
   }
 
   return (
