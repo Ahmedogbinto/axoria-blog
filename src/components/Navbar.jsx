@@ -6,10 +6,10 @@ export default function Navbar() {
         <Link href="/" className="mr-2 text-zinc-900">
           AXORIA
         </Link>
-        <Link href="/categories" className="mx-2 text-zinc-900 mr-auto">
+        <Link href="/" className="mx-2 text-zinc-900 mr-auto">
           Cartegories
         </Link>
-        <Link href="/categories/create" className="mx-2 text-zinc-900">
+        <Link href="/dashboard/create" className="mx-2 text-zinc-900">
           Add an article
         </Link>
       </div>
