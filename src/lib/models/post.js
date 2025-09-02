@@ -4,7 +4,6 @@
 */
 
 import mongoose from "mongoose";
-//import unique from "next/dist/build/utils";
 import slugify from "slugify";
 
 // Shéma de notre post 
@@ -20,7 +19,12 @@ const postSchema = new mongoose.Schema({
     slug: {
         type: String,
         unique: true
-    }
+    },
+    tags: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Tag"
+    }]
+
 }, {timestamps: true})   // l"argument timestamp permet à ce qu'il rajoute la date d'ajout du document.
 
 /*

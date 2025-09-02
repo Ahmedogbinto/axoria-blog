@@ -1,5 +1,5 @@
 /*
-* des post methods ne sont pas des serverActions mais justes des methodes cotéservers qui reagissent coté servers
+* des post methods ne sont pas des serverActions mais justes des methodes coté servers qui reagissent coté servers
 **/
 
 import { connectToBD } from "@/lib/utils/db/connectToDB";
@@ -27,4 +27,8 @@ export async function getPosts() {
         console.error("Error while fetch posts", err)
         throw new Error("Error to fetch posts")
     }
+}
+
+export async function postTags() {
+
 }

@@ -1,19 +1,41 @@
 "use server"   // permet de transformer toutes les function utilisees en serveurs actions
 
+import { Tag } from "@/lib/models/tag";
 import { connectToBD } from "../../utils/db/connectToDB"
 import { Post } from "@/lib/models/post";
+import slugify from "slugify";
 
 export async function addPost(formData){
-    const {title, markdownArticle } = Object.fromEntries(formData); // Extration des donn/es du formulaire, Destructuration des données de notre formulaire
+    const {title, markdownArticle, tags } = Object.fromEntries(formData); // Extration des données du formulaire, Destructuration des données de notre formulaire
 
     try {
         await connectToBD();            // attendre la connection a la BD ou reutiliser la connection existante
+
+        // gestion des tags
+        const tagNamesArray = JSON.parse(tags)
+       
+        const tagIds = await Promise.all(tagNamesArray.map(async (tagname) => {     // chaque callback return une promesse qui serait en pending(en attente)  Niveau Expert les promise.all😍 
+
+            const normalizedTagName = tagname.trim().toLowerCase(); 
+
+            let tag = await Tag.findOne({name:normalizedTagName})  // Verifier si la tag existe deja dans la base de donnees
+
+            if(!tag) {
+                tag = await Tag.create({
+                    name: normalizedTagName,
+                    slug: slugify(normalizedTagName, {strict: true})
+                })
+            }
+            return tag._id
+        }))
+
         const newPost = new Post({
             title,
-            markdownArticle
+            markdownArticle,
+            tags: tagIds
         })
 
-        // Save l'articke dans la BD 
+        // Save l'article dans la BD 
         const savedPost = await newPost.save()
         console.log("post saved successfully")
  

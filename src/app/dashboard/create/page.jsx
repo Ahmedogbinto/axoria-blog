@@ -11,14 +11,16 @@ export default function page() {
    * FormData est un objet JS qui permet de récupérer facilement les valeurs du formulaire.il créé un objet pour nous
    * qu'on   pourra directement passé à la methode post.   */
 
-  const [tags, setTags] = useState(["css", "Javascrip", "React"]);
+  const [tags, setTags] = useState([]);
 
   const tagInputRef = useRef(null);
 
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const formData = new FormData(e.target); //e.target c'est le formulaire qu'on lui a passé.
+    const formData = new FormData(e.target);                    // e.target c'est le contenu du formulaire qu'on lui a passé.
+    formData.set("tags", JSON.stringify(tags))        // let   a ete concerti parce formData n'accepte ques des objets complexes comme de video, image
+    console.log(formData)
 
     for (const [key, valeur] of formData.entries()) {
       console.log(key, valeur);
@@ -29,11 +31,24 @@ export default function page() {
   }
 
   function handleAddTag() {
+    //e.preventDefault()  pour prevenir le comportement par defaut du button. le pb etait deja regle avec lajout de type="button"
 
+    const newTag = tagInputRef.current.value.trim().toLowerCase()
+    if(newTag !== "" && !tags.includes(newTag) && tags.length <=4 ) {
+      setTags([...tags, newTag])
+      tagInputRef.current.value = ""
+    }
   }
 
-  function handleRemoveTag() {
-    
+  function handleRemoveTag(tagToRemove) {
+    setTags(tags.filter(tag => tag !== tagToRemove))
+  }
+
+  function handleEnterOnTagInput(e) {
+    if(e.key === "Enter") {
+      e.preventDefault()
+      handleAddTag()
+    }
   }
 
   return (
@@ -66,6 +81,7 @@ export default function page() {
               className="shadow border rounded p-3 text-gray-700 focus:outline-slate-400"
               placeholder="Add a tag"
               ref={tagInputRef}
+              onKeyDown={handleEnterOnTagInput}
             />
 
             <button
