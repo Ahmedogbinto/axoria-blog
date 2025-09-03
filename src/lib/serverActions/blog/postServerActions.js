@@ -4,10 +4,13 @@ import { Tag } from "@/lib/models/tag";
 import { connectToBD } from "../../utils/db/connectToDB"
 import { Post } from "@/lib/models/post";
 import slugify from "slugify";
-import { marked, Marked } from "marked";         // marked transforme le text du format markdown en Html 
+import { marked} from "marked";         // marked transforme le text du format markdown en Html 
 import {JSDOM} from "jsdom";              // JSDOM et et dompurify vont permettre de purifier le HTML pour eviter les scripts malicieux
 import createDOMPurify from "dompurify";
 
+
+const window = new JSDOM("").window
+const DOMPurify = createDOMPurify(window)
 
 export async function addPost(formData){
     const {title, markdownArticle, tags } = Object.fromEntries(formData); // Extration des données du formulaire, Destructuration des données de notre formulaire
@@ -34,9 +37,9 @@ export async function addPost(formData){
         }))
 
         //gestion du markdown
-        let markdownHTMLResult = marked(markdownArticle)
-        console.log(markdownHTMLResult, "markdownHTMLResult")
+        let markdownHTMLResult = marked(markdownArticle)                                              // transformer notre marckdown en HTML
 
+        markdownHTMLResult = DOMPurify.sanitize(markdownHTMLResult)                                  // on sanitize notre HTML en enlevant de potentiel script malicieux
 
         const newPost = new Post({
             title,
