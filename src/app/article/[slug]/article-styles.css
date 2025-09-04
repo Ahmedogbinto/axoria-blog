@@ -16,3 +16,17 @@
     margin-bottom: 4px;
 }
 
+.article-styles pre {
+    display: block;
+    margin: 20px;
+    padding: 24px 24px 32px;
+    border-radius: 5px;
+}
+
+.article-styles pre code {
+     font-size: 18px;
+}
+
+.article-styles pre {
+    background: #060606;
+}
