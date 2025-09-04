@@ -2,6 +2,7 @@
 
 import { addPost } from "@/lib/serverActions/blog/postServerActions";
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 /**
  * Page de création d'article
  */
@@ -15,39 +16,71 @@ export default function page() {
 
   const tagInputRef = useRef(null);
 
+  const submitButtonRef = useRef(null);
+
+  const serverValidationText = useRef(null);
+
+  const router = useRouter();
+
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const formData = new FormData(e.target);                    // e.target c'est le contenu du formulaire qu'on lui a passé.
-    formData.set("tags", JSON.stringify(tags))        // let   a ete concerti parce formData n'accepte ques des objets complexes comme de video, image
-    console.log(formData)
+    const formData = new FormData(e.target); // e.target c'est le contenu du formulaire qu'on lui a passé.
+    formData.set("tags", JSON.stringify(tags)); // let   a ete concerti parce formData n'accepte ques des objets complexes comme de video, image
+    console.log(formData);
 
     for (const [key, valeur] of formData.entries()) {
       console.log(key, valeur);
-      console.log(formData);
     }
 
-    const resullt = await addPost(formData);
+    serverValidationText.current.textContent = "";
+    submitButtonRef.current.textContent = "Saving Post...";
+    submitButtonRef.current.disabled = true;
+
+    try {
+      const result = await addPost(formData);
+
+      if (result.success) {
+        submitButtonRef.current.textContent = "Post saved ✅";
+
+        let countdown = 3;
+        serverValidationText.current.textContent = `Redirecting in ${countdown}...`;
+
+        const interval = setInterval(() => {
+          countdown -= 1;
+          serverValidationText.current.textContent = `Redirecting in ${countdown}...`;
+
+          if (countdown === 0) {
+            clearInterval(interval);
+            router.push(`/article/${result.slug}`);
+          }
+        }, 1000);
+      }
+    } catch (error) {
+      serverValidationText.current.textContent = "Submit";
+      submitButtonRef.current.textContent = `${error.message}`;
+      submitButtonRef.current.disabled = false;
+    }
   }
 
   function handleAddTag() {
     //e.preventDefault()  pour prevenir le comportement par defaut du button. le pb etait deja regle avec lajout de type="button"
 
-    const newTag = tagInputRef.current.value.trim().toLowerCase()
-    if(newTag !== "" && !tags.includes(newTag) && tags.length <=4 ) {
-      setTags([...tags, newTag])
-      tagInputRef.current.value = ""
+    const newTag = tagInputRef.current.value.trim().toLowerCase();
+    if (newTag !== "" && !tags.includes(newTag) && tags.length <= 4) {
+      setTags([...tags, newTag]);
+      tagInputRef.current.value = "";
     }
   }
 
   function handleRemoveTag(tagToRemove) {
-    setTags(tags.filter(tag => tag !== tagToRemove))
+    setTags(tags.filter((tag) => tag !== tagToRemove));
   }
 
   function handleEnterOnTagInput(e) {
-    if(e.key === "Enter") {
-      e.preventDefault()
-      handleAddTag()
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddTag();
     }
   }
 
@@ -94,17 +127,18 @@ export default function page() {
 
             <div className="flex items-center grow whitespace-nowrap overflow-y-auto shadow border rounded px-3">
               {tags.map((tag) => (
-                <span key={tag}
-                className="inline-block whitespace-nowrap bg-gray-200 text-gray-700 rounded-full px-3 py-1 text-sm font-semibold mr-2"
+                <span
+                  key={tag}
+                  className="inline-block whitespace-nowrap bg-gray-200 text-gray-700 rounded-full px-3 py-1 text-sm font-semibold mr-2"
                 >
                   {tag}
 
-                  <button 
-                  type="button"
-                  onClick={() => handleRemoveTag(tag)}
-                  className="text-red-500 ml-2"
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    className="text-red-500 ml-2"
                   >
-                    &times;    
+                    &times;
                   </button>
                 </span>
               ))}
@@ -135,9 +169,13 @@ export default function page() {
         ></textarea>
 
         {/* Bouton de soumission */}
-        <button className="min-44 bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded border-none mb-4">
+        <button
+          ref={submitButtonRef}
+          className="min-44 bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded border-none mb-4"
+        >
           Submit
         </button>
+        <p ref={serverValidationText}></p>
       </form>
     </main>
   );

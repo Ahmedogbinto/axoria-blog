@@ -71,7 +71,7 @@ export async function addPost(formData){
         console.log("post saved successfully")
  
         // return le succes et slug, ce serait utile dans le font
-        return {succes: true, slug: savedPost.slug}
+        return {success: true, slug: savedPost.slug}
     }catch (error) {
         console.log("Error while creating the post:", error)
         throw new Error(error.message ||"An error occured while creating the post")
