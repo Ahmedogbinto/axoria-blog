@@ -76,11 +76,14 @@ export async function login(formData) {
 
     try {
         await connectToBD();
+
+        // Vérifie si l'utilisateur existe
         const user = await User.findOne({userName: userName})
         if(!user) {
             throw new Error("Invalid credentials")
         }
 
+        // Vérifie le mot de passe
         const isPasswordValid = await bcrypt.compare(password, user.password)
         if (!isPasswordValid) {
             console.log("Invalid credentials")
@@ -100,7 +103,7 @@ export async function login(formData) {
         else {
             session = new Session ({
                 userId: user._id,
-                expiresAt: {$gt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
             })
             await session.save();
         }

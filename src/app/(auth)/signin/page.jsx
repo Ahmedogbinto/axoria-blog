@@ -2,15 +2,32 @@
 
 
 import { useRef } from "react";
-
 import { useRouter } from "next/navigation";
+import { login } from "@/lib/serverActions/session/sessionServerActions";
 
 export default function page() {
 
-   const serverValidationText = useRef();
-    const submitButtonRef = useRef();
+  const serverValidationText = useRef();
+  const submitButtonRef = useRef();
+  const router = useRouter();
 
-  function handleSubmit() {
+  async function handleSubmit(e) {
+    e.preventDefault();
+    serverValidationText.current.textContent = ""
+    submitButtonRef.current.disabled = true
+
+    try {
+      const result = await login (new FormData(e.target))
+
+      if (result.success) {
+        router.push("/")
+      }
+
+    }catch (error) {
+     console.error("Error during login:", error);
+     submitButtonRef.current.disabled = false;
+     submitButtonRef.current.textContent = error.message
+    }
 
   }
 
