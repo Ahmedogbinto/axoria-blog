@@ -4,6 +4,8 @@ import { User } from "@/lib/models/user";
 import { connectToBD } from "@/lib/utils/db/connectToDB";
 import bcrypt from "bcryptjs";
 import slugify from "slugify";
+import { Session } from "@/lib/models/session";
+import { cookies } from "next/headers";
 
 
 export async function register(formData) {
@@ -68,3 +70,57 @@ export async function register(formData) {
     }
 
 } 
+
+export async function login(formData) {
+    const {userName, password} = Object.fromEntries(formData)
+
+    try {
+        await connectToBD();
+        const user = await User.findOne({userName: userName})
+        if(!user) {
+            throw new Error("Invalid credentials")
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password)
+        if (!isPasswordValid) {
+            console.log("Invalid credentials")
+        }
+
+        let session;
+        const existingSession = await Session.findOne({
+            userId: user._id,
+            expiresAt: {$gt: new Date()}
+        })
+
+        if (session) {
+            session = existingSession;
+            existingSession.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)   // Ce Calcul veut dire 7 jours en milli secondes
+            await existingSession.save();
+        } 
+        else {
+            session = new Session ({
+                userId: user._id,
+                expiresAt: {$gt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
+            })
+            await session.save();
+        }
+
+
+        const cookieStore = await cookies();
+        cookieStore.set("sessionId", session._id.toString(), {
+            httpOnly: true,                                     // tres important, pour dire quon aura pas acces en JS, avec document.cookie
+            secure: process.env.NODE_ENV === "production",     // cette lign sert a dire que en production on envoie que sur les requettes securisees HTTPS
+            path: "/",
+            maxAge:  7 * 24 * 60 * 60 * 1000,
+            sameSite: "Lax" // CSRF: Permet de gerer les requettes de types Cross Site Request Forgery
+        })
+
+        return {success: true}
+
+
+
+    } catch(error) {
+        console.log("Error while log in")
+        throw new Error(error.message)
+    }
+}
