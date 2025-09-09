@@ -2,14 +2,13 @@
 
 
 import { useRef } from "react";
-import { register } from "@/lib/serverActions/session/sessionServerActions";
+
 import { useRouter } from "next/navigation";
 
 export default function page() {
 
    const serverValidationText = useRef();
     const submitButtonRef = useRef();
-    const router = useRouter();
 
   function handleSubmit() {
 
