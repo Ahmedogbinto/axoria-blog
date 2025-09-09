@@ -25,8 +25,8 @@ export default function page() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const formData = new FormData(e.target); // e.target c'est le contenu du formulaire qu'on lui a passé.
-    formData.set("tags", JSON.stringify(tags)); // let   a ete concerti parce formData n'accepte ques des objets complexes comme de video, image
+    const formData = new FormData(e.target);                         // e.target c'est le contenu du formulaire qu'on lui a passé.
+    formData.set("tags", JSON.stringify(tags));     
     console.log(formData);
 
     for (const [key, valeur] of formData.entries()) {

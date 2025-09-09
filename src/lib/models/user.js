@@ -5,15 +5,15 @@ const userSchema = new mongoose.Schema({
     userName: {
         type: String,
         required: true,
-        unique: true,
+        unique: true
     },
-    nomalizedUserName: {                       // c'est comme un type de slug pour les noms d'utilisateur.
+    normalizedUserName: {                 // c'est comme un type de slug pour les noms d'utilisateur.
         type: String,
         required: true,
         unique: true
     },
     email: {
-        type: Dtring,
+        type: String,
         required: true,
         unique: true
     },

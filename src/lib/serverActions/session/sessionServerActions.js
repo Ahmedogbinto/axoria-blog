@@ -1,5 +1,8 @@
+"use server"
+
 import { User } from "@/lib/models/user";
-import bcrypt from "bcryptjs/dist/bcrypt";
+import { connectToBD } from "@/lib/utils/db/connectToDB";
+import bcrypt from "bcryptjs";
 import slugify from "slugify";
 
 
@@ -13,10 +16,16 @@ export async function register(formData) {
         throw new Error ("Username is too short")
     }
 
+
+
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    console.log("Password:", password);
+    console.log("Regex test result:", passwordRegex.test(password));
+    
     if(!passwordRegex.test(password)) {
-        throw new Error ("Password must be at least 8 characters long, include one uppercase letter, one lowcase letter, one number ans one special charcter.")
+        throw new Error ("Password must be at least 8 charcters long, include one uppercase letter, one lowcase letter, one number ans one special charcter.")
     }
+
 
     if(password !== passwordRepeat) {
         throw new Error ("Password is not match")
