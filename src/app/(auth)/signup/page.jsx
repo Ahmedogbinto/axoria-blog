@@ -93,7 +93,7 @@ export default function page() {
         type="password"
         id="password"
         name="password"
-        placeholder="your password"
+        placeholder="Your password"
         required
       />
 
