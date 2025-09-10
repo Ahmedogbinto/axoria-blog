@@ -94,13 +94,14 @@ export async function login(formData) {
             userId: user._id,
             expiresAt: {$gt: new Date()}
         })
-
+        // Une session exist deja
         if (session) {
             session = existingSession;
             existingSession.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)   // Ce Calcul veut dire 7 jours en milli secondes
             await existingSession.save();
         } 
         else {
+            // Crée une nouvelle session
             session = new Session ({
                 userId: user._id,
                 expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
@@ -112,10 +113,10 @@ export async function login(formData) {
         const cookieStore = await cookies();
         cookieStore.set("sessionId", session._id.toString(), {
             httpOnly: true,                                     // tres important, pour dire quon aura pas acces en JS, avec document.cookie
-            secure: process.env.NODE_ENV === "production",     // cette lign sert a dire que en production on envoie que sur les requettes securisees HTTPS
+            secure: process.env.NODE_ENV === "production",      // cette lign sert a dire que en production on envoie que sur les requettes securisees HTTPS
             path: "/",
             maxAge:  7 * 24 * 60 * 60 * 1000,
-            sameSite: "Lax" // CSRF: Permet de gerer les requettes de types Cross Site Request Forgery
+            sameSite: "Lax"                                      // CSRF: Permet de gerer les requettes de types Cross Site Request Forgery
         })
 
         return {success: true}
