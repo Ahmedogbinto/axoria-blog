@@ -1,5 +1,13 @@
 import Link from "next/link";
-export default function Navbar() {
+import { readCookie } from "@/lib/serverMethods/session/sessionMethods";
+
+
+
+export  default async function Navbar() {
+
+  const session = await readCookie();
+  console.log(session)
+
   return (
     <nav className="fixed w-full bg-slate-50 border-b border-b-zinc-300">
       <div className="u-main-container flex py-4 px-12">
@@ -9,15 +17,23 @@ export default function Navbar() {
         <Link href="/categories" className="mx-2 text-zinc-900 mr-auto">
           Cartegories
         </Link>
-        <Link href="/dashboard/create" className="mx-2 text-zinc-900">
-          Add an article
-        </Link>
-        <Link href="/signin" className="mx-2 text-zinc-900">
-          Sign In
-        </Link>
-        <Link href="/signup" className="mx-2 text-zinc-900">
-          Sign Up
-        </Link>
+
+        {session.success ? (
+            <Link href="/dashboard/create" className="mx-2 text-zinc-900">
+            Add an article
+            </Link>
+            //<NavbarDropdown/>
+          ):(
+            
+          <> 
+            <Link href="/signin" className="mx-2 text-zinc-900">
+              Sign In
+            </Link>
+            <Link href="/signup" className="mx-2 text-zinc-900">
+              Sign Up
+            </Link>
+          </>
+        )}
       </div>
     </nav>
   );
