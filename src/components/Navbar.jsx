@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { readCookie } from "@/lib/serverMethods/session/sessionMethods";
+import NavbarDropdown from "./navbar/NavbarDropdown";
 
 
 
@@ -19,13 +20,16 @@ export  default async function Navbar() {
         </Link>
 
         {session.success ? (
-            <Link href="/dashboard/create" className="mx-2 text-zinc-900">
+          <>
+           <Link href="/dashboard/create" className="mx-2 text-zinc-900">
             Add an article
             </Link>
-            //<NavbarDropdown/>
-          ):(
             
+            <NavbarDropdown />
+          </>
+          ):(
           <> 
+          
             <Link href="/signin" className="mx-2 text-zinc-900">
               Sign In
             </Link>
@@ -33,6 +37,7 @@ export  default async function Navbar() {
               Sign Up
             </Link>
           </>
+           
         )}
       </div>
     </nav>
