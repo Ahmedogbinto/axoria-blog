@@ -10,7 +10,7 @@ export default function NavbarDropdown() {
 
     const [isOpen, setIsOpen] = useState(false)
 
-    const dropDownRef = useRef()
+    const dropdownRef = useRef()
 
     function toggleDropdown() {
         setIsOpen (!isOpen)
@@ -20,10 +20,27 @@ export default function NavbarDropdown() {
 
     }
 
+    function closeDropdown () {
+       setIsOpen(false)
+    }
+ 
+    useEffect (() => {
+        function handleClickOutside(event) {
+            if (!dropdownRef.current.contains(event.target)) {
+                closeDropdown()
+            }
+        }
+        document.addEventListener("click", handleClickOutside)
+
+        return () => {
+             document.addEventListener("click", handleClickOutside)
+        }
+    }, [])
+
   return (
     <div
     className="relative"
-    ref={dropDownRef}
+    ref={dropdownRef}
     >
         <button
         onClick={toggleDropdown}
@@ -44,6 +61,7 @@ export default function NavbarDropdown() {
                 className="bg-slate-50 hover:bg-slate-200 border-b border-slate-400"
                 >
                     <Link
+                    onClick={closeDropdown}
                     href="/dashboard"
                     className="block p-4"
                     >
