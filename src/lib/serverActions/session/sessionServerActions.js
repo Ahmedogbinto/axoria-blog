@@ -128,3 +128,24 @@ export async function login(formData) {
         throw new Error(error.message)
     }
 }
+
+export async function logOut() {
+
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("sessionId")?.value;
+
+    //suppression du cookie dans la BD
+    try {
+        await Session.findByIdAndDelete(sessionId);
+
+        cookieStore.set("sessionId", "", {
+            httpOnly: true,
+            sesure: process.env.MODE_ENV === "production",
+            path: "/",
+            maxAge: 0, // ) qui veut dire supprimer immediatement le cookie
+            sameSite: "strict" // qui veut dire 
+        })
+    }catch (error){
+        console.log(error)
+    }
+}
