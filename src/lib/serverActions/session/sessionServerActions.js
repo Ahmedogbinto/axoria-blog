@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import slugify from "slugify";
 import { Session } from "@/lib/models/session";
 import { cookies } from "next/headers";
+import AppError from "@/lib/utils/errorHandle/customError";
 
 
 export async function register(formData) {
@@ -13,34 +14,43 @@ export async function register(formData) {
     const {userName, email, password, passwordRepeat} = Object.fromEntries(formData)
 
     /* validation du formulaire cote backend, ⚠ Eviter des injections XSS*/ 
-
-    if(userName.lenght < 3) {
-        throw new Error ("Username is too short")
-    }
-
-
-
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    console.log("Password:", password);
-    console.log("Regex test result:", passwordRegex.test(password));
-    
-    if(!passwordRegex.test(password)) {
-        throw new Error ("Password must be at least 8 charcters long, include one uppercase letter, one lowcase letter, one number ans one special charcter.")
-    }
-
-
-    if(password !== passwordRepeat) {
-        throw new Error ("Password is not match")
-    }
-
+ 
 
     try {
+
+        
+        if((typeof userName !== "string" ) || userName.trim().length < 3) {
+            throw new AppError("Username must be at least 3 caracters long")
+        }
+
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        console.log("Password:", password);
+        console.log("Regex test result:", passwordRegex.test(password));
+        
+        if((typeof password !== "string") || (password.trim().length < 8)  || (!passwordRegex.test(password.trim()))) {
+            throw new AppError("Password must be at least 8 charcters long, include one uppercase letter, one lowcase letter, one number ans one special charcter.")
+        }
+
+
+        if(password !== passwordRepeat) {
+            throw new AppError("Password is not match")
+        }
+
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if ((typeof email !== "string") || !emailRegex.test(email.trim())) {
+            throw new AppError("Invalid email format")
+        }        
+
+
         await connectToBD(); 
-        const user  = await User.findOne({userName})
+        const user  = await User.findOne({
+            $or:[{userName}, {email}]
+        })
 
         if(user) {
-            throw new Error("Username already exists")
+            throw new AppError(user.userName === userName ? "Username already exists" : "email already exist")
         }
+
 
         const normalizedUserName = slugify(userName, {lower: true, strict: true })
 
@@ -62,14 +72,18 @@ export async function register(formData) {
 
         return {success: true}
 
-    }catch(error) {
-        console.log("Error while signing up the user:", error)    
-
-        throw new Error(error.message ||"An error occured while signing up the user")
-
+    }catch (error) {
+        console.error("Error while registering:", error)
+        if (error instanceof AppError){
+            throw error
+        }
     }
+    
+    throw new Error("An error occured while registering:")
 
-} 
+    
+}
+
 
 export async function login(formData) {
     const {userName, password} = Object.fromEntries(formData)

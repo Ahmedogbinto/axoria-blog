@@ -14,7 +14,7 @@ export default function page() {
     e.preventDefault()
 
     serverValidationText.current.classList.add("hidden");
-    serverValidationText.current.classList.textContent = "";
+    serverValidationText.current.textContent = "";
     submitButtonRef.current.textContent = "saving User..."
     submitButtonRef.current.disabled = true
 
@@ -40,8 +40,9 @@ export default function page() {
         }, 1000);
       }
     } catch (error) {
-      serverValidationText.current.textContent = "Submit";
-      submitButtonRef.current.textContent = `${error.message}`;
+      submitButtonRef.current.textContent = "Submit";
+      serverValidationText.current.classList.remove("hidden");
+      serverValidationText.current.textContent = `${error.message}`;
       submitButtonRef.current.disabled = false;
     }
   }

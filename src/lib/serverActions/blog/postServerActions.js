@@ -41,7 +41,7 @@ export async function addPost(formData){
         
         // Gestion d'erreur si l'itilisateur n'est pas connecté
         if(!Session.succes) {
-              throw new AppError("Authentication required")
+            throw new AppError("Authentication required")
         }
 
         // gestion des tags & Gestion des erreurs des tags avant 
