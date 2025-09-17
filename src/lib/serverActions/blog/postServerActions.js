@@ -12,6 +12,8 @@ import { markedHighlight } from "marked-highlight";
 import "prismjs/components/prism-markup"
 import "prismjs/components/prism-css"
 import "prismjs/components/prism-javascript"
+import { Session } from "@/lib/models/session";
+import AppError from "@/lib/utils/errorHandle/customError";
 
 
 
@@ -21,11 +23,37 @@ const DOMPurify = createDOMPurify(window)
 export async function addPost(formData){
     const {title, markdownArticle, tags } = Object.fromEntries(formData); // Extration des données du formulaire, Destructuration des données de notre formulaire
 
-    try {
-        await connectToBD();            // attendre la connection a la BD ou reutiliser la connection existante
 
-        // gestion des tags
+
+    try {
+
+        //Gestion des erreurs au niveau du addPost pour un article
+        if(typeof title !== "string" || title.trim().length < 3 ) {
+            throw new AppError("Inavalid data")
+        }
+
+         if(typeof markdownArticle !== "string" || marckdownArticle.trim().length === 0 ) {
+            throw new AppError("Inavalid data")
+        }
+
+        // attendre la connection a la BD ou reutiliser la connection existante
+        await connectToBD(); 
+        
+        // Gestion d'erreur si l'itilisateur n'est pas connecté
+        if(!Session.succes) {
+              throw new AppError("Authentication required")
+        }
+
+        // gestion des tags & Gestion des erreurs des tags avant 
+        if(typeof tags !== "string") {
+            throw new AppError("Inavalid data")
+        }
+        
         const tagNamesArray = JSON.parse(tags)
+        // Gestion d'erreur lors de la conversion des tags en un tableau JSON
+        if(Array.isArray(tagNamesArray)) {
+            throw new AppError("Tags must be a valid array")
+        }
        
         const tagIds = await Promise.all(tagNamesArray.map(async (tagname) => {     // chaque callback return une promesse qui serait en pending(en attente)  Niveau Expert les promise.all😍 
 
@@ -73,7 +101,11 @@ export async function addPost(formData){
         // return le succes et slug, ce serait utile dans le font
         return {success: true, slug: savedPost.slug}
     }catch (error) {
-        console.log("Error while creating the post:", error)
-        throw new Error(error.message ||"An error occured while creating the post")
+        console.error("Error while creating the post:", error)
+        if (error instanceof AppError){
+            throw error
+        }
     }
+
+    throw new Error("An error occured while creating the post:")
 }
