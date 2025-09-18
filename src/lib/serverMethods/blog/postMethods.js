@@ -4,23 +4,21 @@
 
 import { connectToBD } from "@/lib/utils/db/connectToDB";
 import { Post } from "@/lib/models/post";
-import { Tag } from "@/lib/models/tag";
+import { notFound } from "next/navigation";
 
 export async function getPost(slug) {
-    try {
-        await connectToBD()
-        const post = await Post.findOne({slug}).populate({     //populate pour enrichir notre resultat
-            path: "tags",    
-            select: "name slug"
-        })
-        console.log("post", post)
 
-        return post
-        
-    } catch (err) {
-        console.error("Error while fetch a post", err)
-        throw new Error("Failed to fetch a post")
-    }
+    await connectToBD()
+    const post = await Post.findOne({slug}).populate({     //populate pour enrichir notre resultat
+        path: "tags",    
+        select: "name slug"
+    })
+
+    if(!post) return notFound()
+
+
+    return post    
+
 }
 
 export async function getPosts() {
