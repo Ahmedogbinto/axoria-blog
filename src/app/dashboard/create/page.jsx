@@ -22,6 +22,8 @@ export default function page() {
 
   const router = useRouter();
 
+  const imgUploadvalidationText = useRef(null)
+
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -84,6 +86,38 @@ export default function page() {
     }
   }
 
+  function handleFileChange(e) {
+    const file = e.target.files[0]
+    const validImageTypes = ["image/jpeg", "image/png", "image/webp"] 
+    
+    if(!validImageTypes.includes(file.type)) {
+      imgUploadvalidationText.current.textContent = "Please upload a valid content image (JPEG, PNG, or WebP)"
+      e.target.value = ""
+      return
+    }
+    else {
+      imgUploadvalidationText.current.textContent = ""
+    }
+    
+    const img = new Image() 
+    img.addEventListener("load", checkImgSizeOnLoad )
+
+    function checkImgSizeOnLoad() {
+      if (img.width > 1280 || img.height > 720) {
+        imgUploadvalidationText.current.textContent = "Image exceeds 1280x720 dimensions."
+        e.target.value = ""
+        URL.revokeObjectURL(img.src)
+        return
+      }
+      else {
+        imgUploadvalidationText.current.textContent = ""
+          URL.revokeObjectURL(img.src)
+      }
+    }
+
+    img.src = URL.createObjectURL(file)    // c'est ce qui provoque le chargement de notre image avec le constructeur image
+  }
+
   return (
     <main className=".u-main-container bg-white p-7 mt-32 mb-44">
       <h1 className="text-4xl mb-4">Write a articles 📃 </h1>
@@ -102,6 +136,22 @@ export default function page() {
           placeholder="Title"
           required // Pour pouvoir submit le formulaire 😋
         />
+
+        <label htmlFor="coverImage" className="f-label">
+          Cover image (1280x720 for best quality, or less)
+        </label>
+        <input
+        name="coverImage"
+        className="shadow cursor-pointer border rounded w-full p-3 text-gray-700 mb-2 focus:outline-none focus:shadow-outline"
+        type="file"
+        id="coverImage"
+        placeholder="Article<s cover image"
+        required
+        onChange={handleFileChange}
+        />
+
+        <p ref = {imgUploadvalidationText}
+        className="text-red-700 mb-7"></p>
 
         <div className="mb-10">
           <label className="f-label" htmlFor="tag">
