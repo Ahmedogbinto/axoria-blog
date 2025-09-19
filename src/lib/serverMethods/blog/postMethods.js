@@ -16,7 +16,6 @@ export async function getPost(slug) {
 
     if(!post) return notFound()
 
-
     return post    
 
 }
@@ -27,12 +26,8 @@ export async function getPosts() {
         const posts = await Post.find({})
         return posts
 
-    } catch(err) {
-        console.error("Error while fetch posts", err)
+    } catch(error) {
+        console.error("Error while fetch posts", error)
         throw new Error("Error to fetch posts")
     }
-}
-
-export async function postTags() {
-
 }
