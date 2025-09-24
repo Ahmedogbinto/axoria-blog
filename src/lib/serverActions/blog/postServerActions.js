@@ -14,6 +14,9 @@ import "prismjs/components/prism-css"
 import "prismjs/components/prism-javascript"
 import { Session } from "@/lib/models/session";
 import AppError from "@/lib/utils/errorHandle/customError";
+import crypto from "crypto"
+import sharp from "sharp";
+import { readCookie } from "@/lib/serverMethods/session/sessionMethods";
 
 
 
@@ -21,9 +24,8 @@ const window = new JSDOM("").window
 const DOMPurify = createDOMPurify(window)
 
 export async function addPost(formData){
-    const {title, markdownArticle, tags } = Object.fromEntries(formData); // Extration des données du formulaire, Destructuration des données de notre formulaire
-
-
+    const {title, markdownArticle, tags, coverImage } = Object.fromEntries(formData); // Extration des données du formulaire, Destructuration des données de notre formulaire
+   
 
     try {
 
@@ -32,7 +34,7 @@ export async function addPost(formData){
             throw new AppError("Inavalid data")
         }
 
-         if(typeof markdownArticle !== "string" || marckdownArticle.trim().length === 0 ) {
+         if(typeof markdownArticle !== "string" || markdownArticle.trim().length === 0 ) {
             throw new AppError("Inavalid data")
         }
 
@@ -40,18 +42,57 @@ export async function addPost(formData){
         await connectToBD(); 
         
         // Gestion d'erreur si l'itilisateur n'est pas connecté
-        if(!Session.succes) {
+        const session = await readCookie()
+        if(!session.success) {
             throw new AppError("Authentication required")
+        }
+
+        // Gestion de l'upload d'image
+        if (!coverImage || !(coverImage instanceof File)) {
+            throw new AppError ("Invalid Data")
+        }
+
+        const validImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"] 
+
+        if(!validImageTypes.includes(coverImage.type)) {
+            throw new AppError("Invalid data") 
         }
 
         // gestion des tags & Gestion des erreurs des tags avant 
         if(typeof tags !== "string") {
             throw new AppError("Inavalid data")
         }
+
+        const imageBuffer = Buffer.from(await coverImage.arrayBuffer())
+
+        const {width, height} = await sharp(imageBuffer).metadata()
+
+        if(width > 1280 || height > 720) {
+            throw new AppError("Invalid data")
+        }
+
+        const uniqueFileName = `${crypto.randomUUID()}_${coverImage.name.trim()}`      // Pour eviter les doublons
+
+        const uploadUrl = `${process.env.BUNNY_STORAGE_HOST}/${process.env.BUNNY_STORAGE_ZONE}/${uniqueFileName}`
+
+        const publicImageUrl = `https://ReplicationAxoria.b-cdn.net/${uniqueFileName}`
+
+        const response = await fetch(uploadUrl, {
+            method: "PUT",
+            headers: {
+                "AccessKey": process.env.BUNNY_STORAGE_API_KEY,
+                "Content-type": "application/octet-stream",
+            },
+            body: imageBuffer
+        })
+
+        if(!response.ok) {
+            throw new AppError(`Error while uploading the image : ${response.statusText}`)
+        }
         
-        const tagNamesArray = JSON.parse(tags)
         // Gestion d'erreur lors de la conversion des tags en un tableau JSON
-        if(Array.isArray(tagNamesArray)) {
+        const tagNamesArray = JSON.parse(tags)
+        if(!Array.isArray(tagNamesArray)) {
             throw new AppError("Tags must be a valid array")
         }
        
@@ -89,7 +130,9 @@ export async function addPost(formData){
             title,
             markdownArticle,
             markdownHTMLResult,
-            tags: tagIds
+            tags: tagIds,
+            coverImageUrl: publicImageUrl,
+            author: session.userId
         })
 
         

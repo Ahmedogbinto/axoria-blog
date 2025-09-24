@@ -59,8 +59,8 @@ export default function page() {
         }, 1000);
       }
     } catch (error) {
-      serverValidationText.current.textContent = "Submit";
-      submitButtonRef.current.textContent = `${error.message}`;
+      submitButtonRef.current.textContent = "Submit";
+      serverValidationText.current.textContent = `${error.message}`;
       submitButtonRef.current.disabled = false;
     }
   }
@@ -88,7 +88,7 @@ export default function page() {
 
   function handleFileChange(e) {
     const file = e.target.files[0]
-    const validImageTypes = ["image/jpeg", "image/png", "image/webp"] 
+    const validImageTypes = ["image/jpeg","image/jpg", "image/png", "image/webp"] 
     
     if(!validImageTypes.includes(file.type)) {
       imgUploadvalidationText.current.textContent = "Please upload a valid content image (JPEG, PNG, or WebP)"

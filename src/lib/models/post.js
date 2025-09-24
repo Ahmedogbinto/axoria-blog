@@ -24,6 +24,11 @@ const postSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
+    
+    coverImageUrl: {
+        type: String,
+        required: true
+    },
     // cette propriété,  type: mongoose.Schema.Types.ObjectId permet de lier le post à des Tags
     tags: [{
         type: mongoose.Schema.Types.ObjectId,                                             
