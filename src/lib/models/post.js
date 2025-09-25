@@ -24,7 +24,11 @@ const postSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
-    
+    author: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
     coverImageUrl: {
         type: String,
         required: true
