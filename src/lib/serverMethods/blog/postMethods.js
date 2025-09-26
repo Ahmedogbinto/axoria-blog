@@ -18,7 +18,7 @@ export async function getPost(slug) {
     }).populate({     //populate pour enrichir notre resultat
         path: "tags",    
         select: "name slug"
-    })
+    });
 
     if(!post) return notFound()
 
@@ -30,6 +30,14 @@ export async function getPosts() {
     try {
         await connectToBD();
         const posts = await Post.find({})
+        .populate({
+            path: "author",
+            select: "userName normalizedUserName",
+        })
+        .populate({
+            path: "tags",
+            select: "name slug",
+        })
         return posts
 
     } catch(error) {
