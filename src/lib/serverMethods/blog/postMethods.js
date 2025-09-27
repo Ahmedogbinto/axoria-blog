@@ -45,3 +45,11 @@ export async function getPosts() {
         throw new Error("Error to fetch posts")
     }
 }
+
+export async function getPostsFromUserID(userId) {
+    await connectToBD()
+
+    const posts = await Post.find({author: userId}).select("title _id slug")
+
+    return posts
+}

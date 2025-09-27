@@ -25,7 +25,7 @@ export  default async function Navbar() {
             Add an article
             </Link>
             
-            <NavbarDropdown />
+            <NavbarDropdown userId={session.userId}/>
           </>
           ):(
           <> 

@@ -17,6 +17,7 @@ import AppError from "@/lib/utils/errorHandle/customError";
 import crypto from "crypto"
 import sharp from "sharp";
 import { readCookie } from "@/lib/serverMethods/session/sessionMethods";
+import { revalidatePath } from "next/cache";
 
 
 
@@ -149,6 +150,48 @@ export async function addPost(formData){
             throw error
         }
     }
-
     throw new Error("An error occured while creating the post:")
+}
+
+export async function deletePost(id) {
+  try{
+        await connectToBD()
+
+        const user = await readCookie()
+
+        if(!user) {
+            throw new AppError("Authentication required")
+        }
+
+        const post = await Post.findById(id)
+        if(!post) {
+            throw new AppError("post noty found")
+        }
+
+        await Post.findByIdAndDelete(id)
+
+        if(post.coverImageUrl) {
+            const fileName = post.coverImageUrl.split("/").pop()
+
+            const deleteUrl = `${process.env.BUNNY_STORAGE_HOST}/${process.env.BUNNY_STORAGE_ZONE}/${fileName}`
+
+            const response = await fetch(deleteUrl, {
+                method: "DELETE",
+                headers: {"AccessKey": process.env.BUNNY_STORAGE_API_KEY}
+            })
+
+            if(!response.ok) {
+                throw new AppError(`Failed to delete image: ${response.statusText}`)
+            }
+        }
+
+        revalidatePath(`/article/${post.slug}`)   // Beaucoup plus pratique
+
+    }catch(error) {
+        if (error instanceof AppError){
+            throw error
+        }
+        throw new Error("An error occured while deleleting post")
+    }
+
 }
