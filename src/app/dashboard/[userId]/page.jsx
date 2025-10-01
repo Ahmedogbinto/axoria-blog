@@ -35,9 +35,9 @@ export default async function page({params}) {
                 Edit
               </Link>
 
-              <button>
+              <>
                 <DeletePostButton id={post._id.toString()} />
-              </button>
+              </>
 
             </li>
           ))

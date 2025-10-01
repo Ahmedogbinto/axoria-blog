@@ -3,22 +3,6 @@ import Link from "next/link";
 import { getPosts } from "@/lib/serverMethods/blog/postMethods";
 import BlogCard from "@/components/BlogCard";
 
-// const posts = [
-//   {
-//     author: "John Doe",
-//     title: "5 CSS Tricks",
-//   },
-
-//   {
-//     author: "Victor Wallas",
-//     title: "How to code a Navbar",
-//   },
-
-//   {
-//     author: "Bruce Willis",
-//     title: "How to setup Typescript",
-//   },
-// ];
 
 export default async function Home() {
   await connectToBD()
