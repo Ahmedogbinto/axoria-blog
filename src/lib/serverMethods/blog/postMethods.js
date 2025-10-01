@@ -6,6 +6,7 @@ import { connectToBD } from "@/lib/utils/db/connectToDB";
 import { Post } from "@/lib/models/post";
 import { Tag } from "@/lib/models/tag";
 import { notFound } from "next/navigation";
+import { User } from "@/lib/models/user";
 
 export async function getPost(slug) {
 
@@ -73,4 +74,25 @@ export async function getPostByTag(tagSlug) {
     .sort({createdAt: -1})
 
     return posts
+}
+
+
+export async function getPostsByAuthor(normalizedUserName) {
+
+    await connectToBD();
+
+    const author = await User.findOne({normalizedUserName});
+    if(!author) {
+        notFound()
+    }
+
+    const posts = await Post.find({author: author._id }) 
+    .populate({
+        path:"author",
+        select: "userName normalizedUserName"
+    })
+    .select("title coverImageUrl slug createddAt")
+    .sort({createdAt: -1})
+
+    return {author, posts}
 }
