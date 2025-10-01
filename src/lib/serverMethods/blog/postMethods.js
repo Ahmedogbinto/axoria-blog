@@ -53,3 +53,24 @@ export async function getPostsFromUserID(userId) {
 
     return posts
 }
+
+
+export async function getPostByTag(tagSlug) {
+
+    await connectToBD();
+
+    const tag = await Tag.findOne({slug: tagSlug});
+    if(!tag) {
+        notFound()
+    }
+
+    const posts = await Post.find({tags: tag._id }) 
+    .populate({
+        path:"author",
+        select: "userName"
+    })
+    .select("title coverImageUrl slug creatdAt")
+    .sort({createdAt: -1})
+
+    return posts
+}
