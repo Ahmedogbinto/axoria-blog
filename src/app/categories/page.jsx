@@ -4,7 +4,6 @@ import Link from "next/link"
 export  default async function page() {
 
     const tags = await getTags()
-    console.log(tags, "tagsConsole")
 
   return (
     <main className="u-main-conatainer u-padding-content-container">

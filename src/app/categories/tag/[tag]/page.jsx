@@ -5,8 +5,6 @@ export default async  function page({params}) {
     const {tag} = await params;
     const posts = await getPostByTag(tag);
 
-    console.log(posts, "from tag")
-
   return (
     <main className="u-main-container u-padding-content-container">
         <h1 className="t-main-title">Posts from the #{tag} tag. 🏷 </h1>

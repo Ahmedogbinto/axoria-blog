@@ -3,16 +3,13 @@
 import { addPost } from "@/lib/serverActions/blog/postServerActions";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-/**
- * Page de création d'article
- */
-export default function page() {
-  /**
-   * Gère la soumission du formulaire
-   * FormData est un objet JS qui permet de récupérer facilement les valeurs du formulaire.il créé un objet pour nous
-   * qu'on   pourra directement passé à la methode post.   */
+import { areTagsSimilar } from "@/lib/utils/general/utils";
 
-  const [tags, setTags] = useState([]);
+export default function ClientEditForm({post}) {
+
+
+  const [tags, setTags] = useState(post.tags.map(tag => 
+  tag.name))
 
   const tagInputRef = useRef(null);
 
@@ -27,37 +24,49 @@ export default function page() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const formData = new FormData(e.target);                         // e.target c'est le contenu du formulaire qu'on lui a passé.
-    formData.set("tags", JSON.stringify(tags));     
-    console.log(formData);
+    const formData = new FormData(e.target);  
 
-    for (const [key, valeur] of formData.entries()) {
-      console.log(key, valeur);
+    /**
+     * On veut comprer ci-dessous le contenu du tableau des tags deja enregistre avec un article et celui afficher pour modification
+    */
+
+    const readableFormData = Object.fromEntries(formData);
+    const areSameTags = areTagsSimilar(tags, post.tags);
+
+    if(!readableFormData.coverImage || readableFormData.coverImage.size === 0 && readableFormData.title.trim() === post.title && readableFormData.markdownArticle.trim() === post.markdownArticle && areSameTags) {
+      serverValidationText.current.textContent = " You must make a change before submitting"
+      return
+    } else {
+      serverValidationText.current.textContent = ""
     }
 
+    formData.set("tags", JSON.stringify(tags));   
+    
+    formData.set("slug", post.slug);     
+
     serverValidationText.current.textContent = "";
-    submitButtonRef.current.textContent = "Saving Post...";
+    submitButtonRef.current.textContent = "Updating Post...";
     submitButtonRef.current.disabled = true;
 
     try {
-      const result = await addPost(formData);
+    const result = await addPost(formData);
 
-      if (result.success) {
-        submitButtonRef.current.textContent = "Post saved ✅";
+    if (result.success) {
+        submitButtonRef.current.textContent = "Post updated ✅";
 
         let countdown = 3;
         serverValidationText.current.textContent = `Redirecting in ${countdown}...`;
 
         const interval = setInterval(() => {
-          countdown -= 1;
-          serverValidationText.current.textContent = `Redirecting in ${countdown}...`;
+        countdown -= 1;
+        serverValidationText.current.textContent = `Redirecting in ${countdown}...`;
 
-          if (countdown === 0) {
+        if (countdown === 0) {
             clearInterval(interval);
             router.push(`/article/${result.slug}`);
-          }
+        }
         }, 1000);
-      }
+    }
     } catch (error) {
       submitButtonRef.current.textContent = "Submit";
       serverValidationText.current.textContent = `${error.message}`;
@@ -66,13 +75,11 @@ export default function page() {
   }
 
   function handleAddTag() {
-    //e.preventDefault()  pour prevenir le comportement par defaut du button. le pb etait deja regle avec lajout de type="button"
-
-    const newTag = tagInputRef.current.value.trim().toLowerCase();
-    if (newTag !== "" && !tags.includes(newTag) && tags.length <= 4) {
+      const newTag = tagInputRef.current.value.trim().toLowerCase();
+      if (newTag !== "" && !tags.includes(newTag) && tags.length <= 4) {
       setTags([...tags, newTag]);
       tagInputRef.current.value = "";
-    }
+      }
   }
 
   function handleRemoveTag(tagToRemove) {
@@ -115,12 +122,12 @@ export default function page() {
       }
     }
 
-    img.src = URL.createObjectURL(file)    // c'est ce qui provoque le chargement de notre image avec le constructeur image
+    img.src = URL.createObjectURL(file)   
   }
 
   return (
     <main className=".u-main-container bg-white p-7 mt-32 mb-44">
-      <h1 className="text-4xl mb-4">Write a article 📃 </h1>
+      <h1 className="text-4xl mb-4">Edit this article ✍ </h1>
 
       <form onSubmit={handleSubmit} className="pb-6">
         {/* Champ pour le titre */}
@@ -132,13 +139,16 @@ export default function page() {
           type="text"
           name="title"
           className="shadow border rounded w-full p-3 mb-7 text-gray-700 focus:outline-slate-400 "
-          id="title" // Astuce jsx disponible pour lier le formulaire au HtmlFor... il
+          id="title" 
           placeholder="Title"
-          required // Pour pouvoir submit le formulaire 😋
+          required 
+          defaultValue={post.title}
         />
 
         <label htmlFor="coverImage" className="f-label">
-          Cover image (1280x720 for best quality, or less)
+          <span>Cover image (1280x720 for best quality, or less)</span>
+
+          <span className="block font-normal">Changing the image is optional in edit mode</span>
         </label>
         <input
         name="coverImage"
@@ -146,7 +156,6 @@ export default function page() {
         type="file"
         id="coverImage"
         placeholder="Article<s cover image"
-        required
         onChange={handleFileChange}
         />
 
@@ -216,6 +225,7 @@ export default function page() {
           id="markdownArticle" // Toujours rappele que c<est pour lier testArea a markdownArticle
           required // c<est une maniere de faire de la validation, pour dire quon veut que la condition soit valider avant denvoyer le formulaire
           className="min-h-44 text-xl shadow appearance-none border rounded w-full p-8 text-gray-700 mb-4 focus:outline-slate-400"
+          defaultValue={post.markdownArticle}
         ></textarea>
 
         {/* Bouton de soumission */}

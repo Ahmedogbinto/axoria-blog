@@ -8,7 +8,7 @@ export default async function Home() {
   await connectToBD()
 
   const posts = await getPosts()
-  console.log("Real Pots:", posts)
+
 
   return (
     <div className="u-main-container u-padding-content-container">
