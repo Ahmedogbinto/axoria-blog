@@ -170,9 +170,45 @@ export async function editPost(formData) {
 
         const updateData = {};
         if (typeof title !== "string") throw new Error();
+
         if (title.trim() !== postToEdit.title) {
             updateData.title = title;
             updateData.slug = await generateUniqueSlug(title);
+        }
+
+        if (typeof markdownArticle !== "string") throw new Error();
+
+        if(markdownArticle.trim() !== postToEdit.markdownArticle) {
+            updateData.markdownHTMLResult = DOMPurify.sanitize(marked(markdownArticle))
+            updateData.markdownArticle = markdownArticle
+        }
+
+        if (typeof coverImage !== "object") throw new Error()
+
+        if(coverImage.size > 0) {
+            const validImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
+
+            if(!validImageTypes.includes(coverImage.type)) {
+                throw new Error()
+            }
+
+            const imageBuffer = Buffer.from(await coverImage.arrayBuffer()) 
+            const {width, height} = await sharp(imageBuffer).metadata()
+            if(width > 1280 || height > 720) {
+                throw new Error()
+            }
+
+            const toDeleteImageFileName = postToEdit.coverImageUrl.split("/").pop()
+            const deleteUrl = `${process.env.BUNNY_STORAGE_HOST}/${process.env.BUNNY_STORAGE_ZONE}/${toDeleteImageFileName}`
+
+            const imageDeletionResponse = await fetch(deleteUrl, {
+                method: "DELETE",
+                headers: {"AccessKey": process.env.BUNNY_STORAGE_API_KEY}
+            })
+
+            if(imageDeletionResponse.ok) {
+                throw new AppError(`Error while deleting the imagr ${imageDeletionResponse.statusText}`)
+            }
         }
 
     }catch (error) {
