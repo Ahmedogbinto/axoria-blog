@@ -65,5 +65,4 @@ postSchema.pre("save", async function(next){
     next()
 })
 
-
 export const Post = mongoose.models?.Post || mongoose.model("Post", postSchema) 

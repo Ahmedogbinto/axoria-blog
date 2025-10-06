@@ -18,6 +18,8 @@ import crypto from "crypto"
 import sharp from "sharp";
 import { readCookie } from "@/lib/serverMethods/session/sessionMethods";
 import { revalidatePath } from "next/cache";
+import { connect } from "mongoose";
+import { generateUniqueSlug } from "@/lib/utils/general/utils";
 
 
 
@@ -145,12 +147,41 @@ export async function addPost(formData){
         // return le succes et slug, ce serait utile dans le font
         return {success: true, slug: savedPost.slug}
     }catch (error) {
-        console.error("Error while creating the post:", error)
         if (error instanceof AppError){
             throw error
         }
     }
-    throw new Error("An error occured while creating the post:")
+        console.log(error)
+    throw new Error("An error occured while creating the post")
+}
+
+export async function editPost(formData) {
+
+    const {slug, title, markdownArticle, coverImage, tags} = Object.fromEntries(formData);
+
+    try {
+
+        await connectToBD();
+
+        const session = await sessionInfo()
+        if(!session.success) {
+            throw new Error()
+        }
+
+        const updateData = {};
+        if (typeof title !== "string") throw new Error();
+        if (title.trim() !== postToEdit.title) {
+            updateData.title = title;
+            updateData.slug = await generateUniqueSlug(title);
+        }
+
+    }catch (error) {
+        if (error instanceof AppError){
+            throw error
+        }
+    }
+    console.log(error)
+    throw new Error("An error occured while creating the post")
 }
 
 export async function deletePost(id) {

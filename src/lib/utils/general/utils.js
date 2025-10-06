@@ -1,3 +1,22 @@
+import slugify from "slugify";
+import mongoose from "mongoose";
+import { Post } from "@/lib/models/post";
+
+export async function generateUniqueSlug(title) {
+    let slugCandidate = slugify(title, {lower: true, strict: true});
+
+    let slugExiste = await Post.findOne({slug: slugCandidate});
+
+    let counter = 1;
+    while (slugExiste) {
+        slugCandidate =`${slugCandidate}-${counter}`
+        slugExiste = await Post.findOne({slug: slugCandidate});
+        counter++;
+    }
+    return slugCandidate
+}
+
+
 export function areTagsSimilar(userTagsArray, DBTagsArray) {
 
     if(userTagsArray.length !== DBTagsArray.length) return false;
