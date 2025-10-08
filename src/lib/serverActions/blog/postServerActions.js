@@ -198,6 +198,7 @@ export async function editPost(formData) {
                 throw new Error()
             }
 
+            // Delete image 
             const toDeleteImageFileName = postToEdit.coverImageUrl.split("/").pop()
             const deleteUrl = `${process.env.BUNNY_STORAGE_HOST}/${process.env.BUNNY_STORAGE_ZONE}/${toDeleteImageFileName}`
 
@@ -209,6 +210,26 @@ export async function editPost(formData) {
             if(imageDeletionResponse.ok) {
                 throw new AppError(`Error while deleting the imagr ${imageDeletionResponse.statusText}`)
             }
+
+            // upload new image
+            const imageToUploadFileName = `${crypto.randomUUID()}_${coverImage.name}`
+            const imageToUploadUrl = `${process.env.BUNNY_STORAGE_HOST}/${process.env.BUNNY_STORAGE_ZONE}/${imageToUploadFileName}`
+            const imageToUploadPublicUrl = `https://ReplicationAxoria.b-cdn.net/${imageToUploadUrl}`
+
+            const imageToUploadResponse = await fetch (imageToUploadPublicUrl, {
+                method: "PUT",
+                headers: {
+                    "AccessKey": process.env.BUNNY_STORAGE_API_KEY,
+                    "Content-Type": "application/octet-stream"
+                },
+                body: imageBuffer
+            })
+            
+            if (!imageToUploadResponse) {
+                throw new Error(`Error while uploading the new image: ${imageToUploadResponse.statusText}` )
+            }
+
+            updateData.coverImageUrl = imageToUploadPublicUrl
         }
 
     }catch (error) {
