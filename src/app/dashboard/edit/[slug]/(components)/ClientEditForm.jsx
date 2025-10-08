@@ -41,8 +41,7 @@ export default function ClientEditForm({post}) {
     }
 
     formData.set("tags", JSON.stringify(tags));   
-    formData.set("slug", post.slug);   
-    formData.set("postToEdit", post);   
+    formData.set("postToEdit", JSON.stringify(post));   
 
 
     serverValidationText.current.textContent = "";

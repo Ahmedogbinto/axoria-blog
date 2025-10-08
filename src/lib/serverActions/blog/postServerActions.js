@@ -19,7 +19,8 @@ import sharp from "sharp";
 import { readCookie } from "@/lib/serverMethods/session/sessionMethods";
 import { revalidatePath } from "next/cache";
 import { connect } from "mongoose";
-import { generateUniqueSlug } from "@/lib/utils/general/utils";
+import { areTagsSimilar, generateUniqueSlug } from "@/lib/utils/general/utils";
+import { stringify } from "querystring";
 
 
 
@@ -157,7 +158,10 @@ export async function addPost(formData){
 
 export async function editPost(formData) {
 
-    const {slug, title, markdownArticle, coverImage, tags} = Object.fromEntries(formData);
+    const {postToEditStringified, title, markdownArticle, coverImage, tags} = Object.fromEntries(formData);
+
+    const postToEdit = JSON.stringify(postToEditStringified)
+
 
     try {
 
@@ -231,6 +235,18 @@ export async function editPost(formData) {
 
             updateData.coverImageUrl = imageToUploadPublicUrl
         }
+
+        // Tag management 
+        if (typeof tags !== "string") throw new Error()
+
+        const tagNamesArray = JSON>stringify(tags)
+        if (!Array.isArray(tagNamesArray)) throw new Error();
+
+        if (!areTagsSimilar(tagNamesArray, postToEdit.tags)) {
+            const tagIds = await Promise.all(tagNamesArray.map(tag => findOrCreateTag(tag)))
+            updateData.tags = tagIds
+        }
+
 
     }catch (error) {
         if (error instanceof AppError){
