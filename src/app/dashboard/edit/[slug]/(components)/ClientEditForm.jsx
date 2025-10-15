@@ -1,6 +1,6 @@
 "use client";
 
-import { addPost } from "@/lib/serverActions/blog/postServerActions";
+import { editPost } from "@/lib/serverActions/blog/postServerActions";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { areTagsSimilar } from "@/lib/utils/general/utils";
@@ -41,7 +41,7 @@ export default function ClientEditForm({post}) {
     }
 
     formData.set("tags", JSON.stringify(tags));   
-    formData.set("postToEdit", JSON.stringify(post));   
+    formData.set("postToEditStringified", JSON.stringify(post));   
 
 
     serverValidationText.current.textContent = "";
@@ -49,7 +49,7 @@ export default function ClientEditForm({post}) {
     submitButtonRef.current.disabled = true;
 
     try {
-    const result = await addPost(formData);
+    const result = await editPost(formData);
 
     if (result.success) {
         submitButtonRef.current.textContent = "Post updated ✅";
@@ -155,7 +155,7 @@ export default function ClientEditForm({post}) {
         className="shadow cursor-pointer border rounded w-full p-3 text-gray-700 mb-2 focus:outline-none focus:shadow-outline"
         type="file"
         id="coverImage"
-        placeholder="Article<s cover image"
+        placeholder="Article cover image"
         onChange={handleFileChange}
         />
 

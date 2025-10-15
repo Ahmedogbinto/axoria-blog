@@ -12,15 +12,13 @@ import { markedHighlight } from "marked-highlight";
 import "prismjs/components/prism-markup"
 import "prismjs/components/prism-css"
 import "prismjs/components/prism-javascript"
-import { Session } from "@/lib/models/session";
 import AppError from "@/lib/utils/errorHandle/customError";
 import crypto from "crypto"
 import sharp from "sharp";
 import { readCookie } from "@/lib/serverMethods/session/sessionMethods";
 import { revalidatePath } from "next/cache";
-import { connect } from "mongoose";
 import { areTagsSimilar, generateUniqueSlug } from "@/lib/utils/general/utils";
-import { stringify } from "querystring";
+import { findOrCreateTag } from "@/lib/serverMethods/tag/tagMethod";
 
 
 
@@ -156,18 +154,21 @@ export async function addPost(formData){
     throw new Error("An error occured while creating the post")
 }
 
+
+
 export async function editPost(formData) {
 
     const {postToEditStringified, title, markdownArticle, coverImage, tags} = Object.fromEntries(formData);
 
-    const postToEdit = JSON.stringify(postToEditStringified)
+    const postToEdit = JSON.parse(postToEditStringified)
 
+    console.log(postToEditStringified, postToEdit, title, markdownArticle, coverImage, tags)
 
     try {
 
         await connectToBD();
 
-        const session = await sessionInfo()
+        const session = await readCookie()
         if(!session.success) {
             throw new Error()
         }
@@ -203,24 +204,33 @@ export async function editPost(formData) {
             }
 
             // Delete image 
-            const toDeleteImageFileName = postToEdit.coverImageUrl.split("/").pop()
-            const deleteUrl = `${process.env.BUNNY_STORAGE_HOST}/${process.env.BUNNY_STORAGE_ZONE}/${toDeleteImageFileName}`
+            if(postToEdit.coverImageUrl) {
+                const toDeleteImageFileName = postToEdit.coverImageUrl.split("/").pop()
+                const deleteUrl = `${process.env.BUNNY_STORAGE_HOST}/${process.env.BUNNY_STORAGE_ZONE}/${toDeleteImageFileName}`
 
-            const imageDeletionResponse = await fetch(deleteUrl, {
-                method: "DELETE",
-                headers: {"AccessKey": process.env.BUNNY_STORAGE_API_KEY}
-            })
+                console.log("Image to delete:", toDeleteImageFileName);
+                console.log("Delete URL:", deleteUrl);
 
-            if(imageDeletionResponse.ok) {
-                throw new AppError(`Error while deleting the imagr ${imageDeletionResponse.statusText}`)
+                const imageDeletionResponse = await fetch(deleteUrl, {
+                    method: "DELETE",
+                    headers: {"AccessKey": process.env.BUNNY_STORAGE_API_KEY}
+                })
+
+                console.log("Image deletion response status:", imageDeletionResponse.status);
+                console.log("Image deletion response text:", await imageDeletionResponse.text());
+
+                if(!imageDeletionResponse.ok && imageDeletionResponse.status !== 404 ) {
+                    throw new AppError(`Error while deleting the image ${imageDeletionResponse.statusText}`)
+                }
             }
+            
 
-            // upload new image
+            // Upload new image
             const imageToUploadFileName = `${crypto.randomUUID()}_${coverImage.name}`
             const imageToUploadUrl = `${process.env.BUNNY_STORAGE_HOST}/${process.env.BUNNY_STORAGE_ZONE}/${imageToUploadFileName}`
-            const imageToUploadPublicUrl = `https://ReplicationAxoria.b-cdn.net/${imageToUploadUrl}`
+            const imageToUploadPublicUrl = `https://ReplicationAxoria.b-cdn.net/${imageToUploadFileName}`
 
-            const imageToUploadResponse = await fetch (imageToUploadPublicUrl, {
+            const imageToUploadResponse = await fetch (imageToUploadUrl, {
                 method: "PUT",
                 headers: {
                     "AccessKey": process.env.BUNNY_STORAGE_API_KEY,
@@ -228,18 +238,23 @@ export async function editPost(formData) {
                 },
                 body: imageBuffer
             })
+
+            console.log("Image upload response status:", imageToUploadResponse.status);
+            console.log("Image upload response text:", await imageToUploadResponse.text());
             
             if (!imageToUploadResponse) {
+                console.error("Failed to upload image:", await imageToUploadResponse.text());
                 throw new Error(`Error while uploading the new image: ${imageToUploadResponse.statusText}` )
             }
 
             updateData.coverImageUrl = imageToUploadPublicUrl
         }
-
+     
         // Tag management 
         if (typeof tags !== "string") throw new Error()
 
-        const tagNamesArray = JSON>stringify(tags)
+        const tagNamesArray = JSON.parse(tags)
+
         if (!Array.isArray(tagNamesArray)) throw new Error();
 
         if (!areTagsSimilar(tagNamesArray, postToEdit.tags)) {
@@ -247,15 +262,23 @@ export async function editPost(formData) {
             updateData.tags = tagIds
         }
 
+        if (Object.keys(updateData).length === 0) throw new Error()
+
+        const updatedPost = await Post.findByIdAndUpdate(postToEdit._id, updateData, {new: true})      
+
+        return {success: true, slug: updatedPost.slug}
+
 
     }catch (error) {
+         console.log("Error occured while editing the post", error)
         if (error instanceof AppError){
             throw error
         }
     }
-    console.log(error)
     throw new Error("An error occured while creating the post")
 }
+
+
 
 export async function deletePost(id) {
   try{
