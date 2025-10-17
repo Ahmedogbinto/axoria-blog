@@ -7,6 +7,7 @@ import slugify from "slugify";
 import { Session } from "@/lib/models/session";
 import { cookies } from "next/headers";
 import AppError from "@/lib/utils/errorHandle/customError";
+import { revalidateTag } from "next/cache";
 
 
 export async function register(formData) {
@@ -133,6 +134,7 @@ export async function login(formData) {
             sameSite: "Lax"                                      // CSRF: Permet de gerer les requettes de types Cross Site Request Forgery
         })
 
+        revalidateTag("auth-session")
         return {success: true}
 
 
@@ -159,6 +161,11 @@ export async function logOut() {
             maxAge: 0, // ) qui veut dire supprimer immediatement le cookie
             sameSite: "strict" // qui veut dire 
         })
+        
+        revalidateTag("auth-session")
+        return {success: true}
+
+
     }catch (error){
         console.log(error)
     }
