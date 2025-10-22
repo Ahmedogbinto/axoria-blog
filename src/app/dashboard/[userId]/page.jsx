@@ -24,13 +24,13 @@ export default async function page({params}) {
             key={post._id}
             className="flex items-center mb-2 bg-slate-50 py-2 pl-4"
             > 
-              <Link href={`/article/${post.slug}`}
+              <Link href={`/article/${post.slug}`} 
               className="mr-auto underline underline-offset-2 text-lg text-violet-600">
                 {post.title}
               </Link>
 
               <Link 
-              href={`/dashboard/edit/${post.slug}`}
+              href={`/dashboard/edit/${post._id}`}  // on utilise _id pour valider le caching de la page 
               className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 min-w-20 text-center rounded mr-2">
                 Edit
               </Link>

@@ -8,6 +8,13 @@ import { Tag } from "@/lib/models/tag";
 import { notFound } from "next/navigation";
 import { User } from "@/lib/models/user";
 
+/*
+* gestion du caching sur une page dynamique
+* gestion du caching lors de la mise à jour d'un article (1)
+**/
+export const dynamic = "force-static"
+
+
 export async function getPost(slug) {
 
     await connectToBD()
@@ -16,7 +23,7 @@ export async function getPost(slug) {
     }).populate({
         path: "author",
         select: "userName normalizedUserName"
-    }).populate({     //populate pour enrichir notre resultat
+    }).populate({                            //populate pour enrichir notre resultat
         path: "tags",    
         select: "name slug"
     });
@@ -97,10 +104,10 @@ export async function getPostsByAuthor(normalizedUserName) {
     return {author, posts}
 }
 
-export async function getPostForEdit(slug) {
+export async function getPostForEdit(id) {
     await connectToBD();
 
-    const post = await Post.findOne({slug})
+    const post = await Post.findOne({_id: id})
     .populate({
         path: "author",
         select: "userName normalizedName"

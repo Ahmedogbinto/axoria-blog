@@ -5,8 +5,8 @@ import { Types } from "mongoose";
 
 export default async function page({params}) {
 
-  const {slug} = await params;
-  const post = await getPostForEdit(slug)
+  const {id} = await params;
+  const post = await getPostForEdit(id)
 
 
   const serializablePost = JSON.parse(

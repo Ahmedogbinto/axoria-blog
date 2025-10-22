@@ -264,8 +264,9 @@ export async function editPost(formData) {
 
         if (Object.keys(updateData).length === 0) throw new Error()
 
-        const updatedPost = await Post.findByIdAndUpdate(postToEdit._id, updateData, {new: true})      
-
+        const updatedPost = await Post.findByIdAndUpdate(postToEdit._id, updateData, {new: true}) 
+        
+        revalidatePath(`/article/${postToEdit.slug}`) // gestion du caching lors de la mise à jour d'un article (2)
         return {success: true, slug: updatedPost.slug}
 
 
@@ -312,7 +313,7 @@ export async function deletePost(id) {
             }
         }
 
-        revalidatePath(`/article/${post.slug}`)   // Beaucoup plus pratique
+        revalidatePath(`/article/${post.slug}`)   // Beaucoup plus pratique pour la gestion du caching
 
     }catch(error) {
         if (error instanceof AppError){
