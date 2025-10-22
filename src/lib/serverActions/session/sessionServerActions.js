@@ -135,7 +135,7 @@ export async function login(formData) {
         })
 
         revalidateTag("auth-session")
-        return {success: true}
+        return {success: true, userId: user._id.toString()}
 
 
 
@@ -161,6 +161,7 @@ export async function logOut() {
             maxAge: 0, // ) qui veut dire supprimer immediatement le cookie
             sameSite: "strict" // qui veut dire 
         })
+        
         
         revalidateTag("auth-session")
         return {success: true}
