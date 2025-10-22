@@ -3,6 +3,9 @@ import Link from "next/link";
 import { getPosts } from "@/lib/serverMethods/blog/postMethods";
 import BlogCard from "@/components/BlogCard";
 
+export const revalidate = 60 // caching
+// La page d'accueil utilsise await getPosts, donc la se rechargera après chaque 60secondes
+// Permet d'economiser d'enorme appel vers notre base de données
 
 export default async function Home() {
   await connectToBD()

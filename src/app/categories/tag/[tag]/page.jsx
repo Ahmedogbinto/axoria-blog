@@ -1,6 +1,8 @@
 import BlogCard from "@/components/BlogCard";
 import { getPostByTag } from "@/lib/serverMethods/blog/postMethods"
 
+export const revalidate = 60 // caching
+
 export default async  function page({params}) {
     const {tag} = await params;
     const posts = await getPostByTag(tag);

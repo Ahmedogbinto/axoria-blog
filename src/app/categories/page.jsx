@@ -1,6 +1,8 @@
 import { getTags } from "@/lib/serverMethods/blog/tagMethods"
 import Link from "next/link"
 
+export const revalidate = 60 // caching
+
 export  default async function page() {
 
     const tags = await getTags()
