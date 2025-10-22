@@ -1,15 +1,18 @@
 "use client"
 
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/lib/serverActions/session/sessionServerActions";
+import { useAuth } from "@/app/AuthContext";
 
 export default function page() {
 
   const serverValidationText = useRef();
   const submitButtonRef = useRef();
   const router = useRouter();
+
+  const {setIsAuthenticated} = useAuth();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -20,6 +23,11 @@ export default function page() {
       const result = await login (new FormData(e.target))
 
       if (result.success) {
+        setIsAuthenticated({
+          loading: false,
+          isConnected: true,
+          userId: result.userId
+        })
         router.push("/")
       }
 

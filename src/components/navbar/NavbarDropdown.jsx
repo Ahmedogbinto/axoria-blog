@@ -4,12 +4,15 @@ import Image from "next/image";
 import Link from "next/link";
 import {useRouter} from "next/navigation";
 import { logOut, isPrivatePage } from "@/lib/serverActions/session/sessionServerActions";
+import { useAuth } from "@/app/AuthContext";
 
 
 export default function NavbarDropdown({userId}) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const dropdownRef = useRef();
+
+  const {setIsAuthenticated} = useAuth();
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -18,9 +21,15 @@ export default function NavbarDropdown({userId}) {
   async function handleLogout() {
     await logOut();
 
+    setIsAuthenticated({
+      loading: false,
+      isConnected: false,
+      userId: null
+    })
+
     const currentPath = window.location.pathname;
     if(isPrivatePage(currentPath)) {
-        router.push("/signin")
+      router.push("/signin")
     }
   }
 

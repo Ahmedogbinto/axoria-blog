@@ -1,13 +1,19 @@
+ "use client"
+
 import Link from "next/link";
-import { readCookie } from "@/lib/serverMethods/session/sessionMethods";
+//import { readCookie } from "@/lib/serverMethods/session/sessionMethods";
 import NavbarDropdown from "./navbar/NavbarDropdown";
+import { useAuth } from "@/app/AuthContext";
+import Image from "next/image";
 
 
+export  default function Navbar() {
 
-export  default async function Navbar() {
+   // const session = await readCookie();
 
-  const session = await readCookie();
-  console.log(session)
+  const {isAuthenticated } = useAuth()
+
+  console.log(isAuthenticated);
 
   return (
     <nav className="fixed w-full bg-slate-50 border-b border-b-zinc-300">
@@ -19,17 +25,24 @@ export  default async function Navbar() {
           Cartegories
         </Link>
 
-        {session.success ? (
+        {isAuthenticated.loading && (
+          <div>
+            <Image src="/icons/loader.svg" width={24} height={24} alt="" />
+          </div>  
+        )}
+
+        {isAuthenticated.isConnected && (
           <>
-           <Link href="/dashboard/create" className="mx-2 text-zinc-900">
-            Add an article
+            <Link href="/dashboard/create" className="mx-2 text-zinc-900">
+             Add an article
             </Link>
             
-            <NavbarDropdown userId={session.userId}/>
+            <NavbarDropdown userId={isAuthenticated.userId}/>
           </>
-          ):(
-          <> 
-          
+        )}
+
+        {!isAuthenticated.isConnected && !isAuthenticated.looading && (
+            <> 
             <Link href="/signin" className="mx-2 text-zinc-900">
               Sign In
             </Link>
@@ -37,8 +50,8 @@ export  default async function Navbar() {
               Sign Up
             </Link>
           </>
-           
         )}
+
       </div>
     </nav>
   );

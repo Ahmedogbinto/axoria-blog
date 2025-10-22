@@ -177,3 +177,29 @@ export async function isPrivatePage(pathname) {
  // Algorithme js classique
  return privateSegments.some(segment => pathname === segment || pathname.startsWith(segment + "/"));
 }
+
+export async function SAReadCookie() { //SA pour dire Server Action puis ReadCookie
+
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get("sessionId")?. value
+
+    if(!sessionId) {
+        return {success: false, userId: null}
+    }
+
+    await connectToBD();
+
+    const session = await Session.findById(sessionId);
+
+    if (!session || session.expiresAt < new Date()) {
+        return {success: false, userId: null}
+    }
+
+    const user = await User.findById(session.userId);
+
+    if (!user) {
+        return {success: false, userId: null}
+    }
+
+    return {success: true, userId: user._id.toString()}
+}
