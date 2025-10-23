@@ -13,12 +13,11 @@ export default function RootLayout({ children }) {
       <body className="min-h-full flex flex-col">
         <AuthProvider>    
           <Navbar /> 
-          <main className="grow">{children} </main>
-        </AuthProvider>
-          
+          <main className="grow relative">{children}</main>
+        </AuthProvider> 
         <Footer />
       </body>
-     
+    
     </html>
   )
 }

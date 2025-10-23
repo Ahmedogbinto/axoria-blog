@@ -1,5 +1,4 @@
-import { connectToBD } from "@/lib/utils/db/connectToDB";
-import Link from "next/link";
+
 import { getPosts } from "@/lib/serverMethods/blog/postMethods";
 import BlogCard from "@/components/BlogCard";
 
@@ -8,13 +7,11 @@ export const revalidate = 60 // caching
 // Permet d'economiser d'enorme appel vers notre base de données
 
 export default async function Home() {
-  await connectToBD()
 
   const posts = await getPosts()
 
-
   return (
-    <div className="u-main-container u-padding-content-container">
+    <div className="u-main-container u-padding-content-container"> 
       <h1 className="t-main-title">Stay up to day with AXORIA</h1>
       <p className="t-main-subtitle">Tech news and useful knowledge</p>
 
